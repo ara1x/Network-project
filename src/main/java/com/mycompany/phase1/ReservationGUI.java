@@ -35,7 +35,7 @@ public class ReservationGUI extends JFrame {
             "",          // 0 unused
             "12:00",     // 1
             "1:00",      // 2
-            "2:00",      // 3
+            "2:00",    // 3
             "3:00",      // 4
             "4:00",      // 5
             "5:00",      // 6
