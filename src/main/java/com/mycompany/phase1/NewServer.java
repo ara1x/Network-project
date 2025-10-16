@@ -18,7 +18,9 @@ public class NewServer {
         System.out.println("Server running on port 9090");
 
         while (true) {
+            System.out.println("Waiting for client connection");
             Socket client = serverSocket.accept();
+            System.out.println("Connected to client");
             NewClient clientThread = new NewClient(client, clients, state);
             clients.add(clientThread);
             new Thread(clientThread).start();
