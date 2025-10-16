@@ -16,7 +16,7 @@ public class Client {
         System.out.println("Connected to server");
     }
 
-    /*public String register(String u, String p) throws IOException {
+    public String register(String u, String p) throws IOException {
         out.println("REGISTER " + u + " " + p);
         return in.readLine();
     }
@@ -29,7 +29,7 @@ public class Client {
     public String book(String username, String type, int number) throws IOException {
         out.println("BOOK " + username + " " + type + " " + number);
         return in.readLine();
-    }*/
+    }
 
     public void close() throws IOException {
         socket.close();
