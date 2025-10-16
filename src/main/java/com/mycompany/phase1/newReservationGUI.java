@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-public class ReservationGUI extends JFrame {
+public class newReservationGUI extends JFrame {
 
     private final Client client = new Client();
 
