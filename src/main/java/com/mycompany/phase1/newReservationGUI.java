@@ -39,7 +39,7 @@ public class newReservationGUI extends JFrame {
 
     private final boolean[][][] availability = new boolean[3][5][7];
 
-    public ReservationGUI() {
+    public newReservationGUI() {
         setTitle("Online Reservation System");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(640, 420);
