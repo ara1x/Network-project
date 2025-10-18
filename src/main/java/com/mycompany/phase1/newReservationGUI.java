@@ -297,8 +297,12 @@ public class newReservationGUI extends JFrame {
 
         c.gridwidth=1; c.gridy=2; c.gridx=0; p.add(reserve, c);
         c.gridx=1; p.add(back, c);
+        
+        
+        
+        
 
-        reserve.addActionListener(e -> {
+        /*reserve.addActionListener(e -> {
             String sel = listRooms.getSelectedValue();
             if (sel == null) {
                 JOptionPane.showMessageDialog(this, "Select a room.");
@@ -310,7 +314,7 @@ public class newReservationGUI extends JFrame {
                         .add(selectedRoomId + " - Day " + selectedStartDay + " x " + selectedNights);
             JOptionPane.showMessageDialog(this, "Booking confirmed for " + selectedRoomId);
             showCard("MENU");
-        });
+        });*/
 
         back.addActionListener(e -> showCard("DURATION"));
         root.add(p, "RESULTS");
