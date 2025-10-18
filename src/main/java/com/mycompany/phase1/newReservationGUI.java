@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReservationGUI extends JFrame {
+public class newReservationGUI extends JFrame {
 
     // ---- networking ----
     private final Client client = new Client();
@@ -34,7 +34,7 @@ public class ReservationGUI extends JFrame {
     // ---- constants ----
     private static final String[] ROOM_TYPES = {"STANDARD", "PREMIUM", "SUITE"};
 
-    public ReservationGUI() {
+    public newReservationGUI() {
         setTitle("Online Reservation System");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(640, 420);
@@ -42,7 +42,7 @@ public class ReservationGUI extends JFrame {
 
         // connect (hard fail if server not running)
         try {
-            client.connect("localhost", 9091);   // <-- change host/port if needed
+            client.connect("localhost", 9090);  
             client.ping();
             serverConnected = true;
         } catch (IOException e) {
