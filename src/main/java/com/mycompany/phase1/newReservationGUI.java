@@ -3,22 +3,24 @@ package com.mycompany.phase1;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
-public class newReservationGUI extends JFrame {
+public class ReservationGUI extends JFrame {
 
+    // ---- networking ----
     private final Client client = new Client();
+    private boolean serverConnected = false;
 
-    // ----------- STATE -----------
+    // ---- session state ----
     private String currentUser = null;
     private String selectedType = "STANDARD";
-    private int selectedStartDay = 1;
-    private int selectedNights = 1;
+    private int selectedStartDay = 1;  // 1..7
+    private int selectedNights = 1;    // 1..7
     private String selectedRoomId = null;
     private List<String> lastAvailableRooms = new ArrayList<>();
 
-    // ----------- UI infra -----------
+    // ---- UI infra ----
     private final CardLayout cards = new CardLayout();
     private final JPanel root = new JPanel(cards);
 
@@ -29,32 +31,26 @@ public class newReservationGUI extends JFrame {
     private DefaultListModel<String> roomsModel;
     private JTextArea myBookingsArea;
 
-    // ----------- Constants -----------
+    // ---- constants ----
     private static final String[] ROOM_TYPES = {"STANDARD", "PREMIUM", "SUITE"};
-    private static final String[] STD_ROOMS = {"S1","S2","S3","S4","S5"};
-    private static final String[] PRM_ROOMS = {"P1","P2","P3","P4","P5"};
-    private static final String[] STE_ROOMS = {"U1","U2","U3","U4","U5"};
 
-    private final Map<String, List<String>> userBookings = new HashMap<>();
-
-    private final boolean[][][] availability = new boolean[3][5][7];
-
-    public newReservationGUI() {
+    public ReservationGUI() {
         setTitle("Online Reservation System");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(640, 420);
         setLocationRelativeTo(null);
 
+        // connect (hard fail if server not running)
         try {
-            client.connect("10.6.207.31", 9090);
+            client.connect("localhost", 9091);   // <-- change host/port if needed
+            client.ping();
+            serverConnected = true;
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Server not found (using local demo grid).");
-        }
-
-        for (int c = 0; c < 3; c++) {
-            for (int r = 0; r < 5; r++) {
-                Arrays.fill(availability[c][r], true);
-            }
+            serverConnected = false;
+            JOptionPane.showMessageDialog(this,
+                    "Cannot connect to the server. Start the server first.\n" + e.getMessage());
+            System.exit(0);
+            return;
         }
 
         buildHome();
@@ -113,6 +109,7 @@ public class newReservationGUI extends JFrame {
         c.gridy=3; p.add(back, c);
 
         btn.addActionListener(e -> {
+            if (!ensureConnected()) return;
             String u = tfUser.getText().trim();
             String pw = new String(tfPass.getPassword());
             if (u.isEmpty() || pw.isEmpty()) {
@@ -120,7 +117,7 @@ public class newReservationGUI extends JFrame {
                 return;
             }
             try {
-                String resp = client.register(u, pw);
+                String resp = client.register(u, pw);          // "OK REGISTERED" | "ERR USER_EXISTS"
                 if (resp != null && resp.startsWith("OK")) {
                     currentUser = u;
                     JOptionPane.showMessageDialog(this, "Registered successfully.");
@@ -156,13 +153,30 @@ public class newReservationGUI extends JFrame {
         c.gridy=3; p.add(back, c);
 
         btn.addActionListener(e -> {
-            currentUser = tfUser.getText().trim();
-            if (currentUser.isEmpty()) {
+            if (!ensureConnected()) return;
+            String u = tfUser.getText().trim();
+            String pw = new String(tfPass.getPassword());
+            if (u.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Enter username.");
                 return;
             }
-            JOptionPane.showMessageDialog(this, "Logged in successfully.");
-            showCard("MENU");
+            try {
+                String resp = client.login(u, pw);             // "OK LOGIN" | "ERR NO_SUCH_USER" | "ERR BAD_CREDENTIALS"
+                if (resp.startsWith("OK")) {
+                    currentUser = u;
+                    JOptionPane.showMessageDialog(this, "Logged in successfully.");
+                    showCard("MENU");
+                } else if (resp.contains("NO_SUCH_USER")) {
+                    JOptionPane.showMessageDialog(this, "No account found. Please Sign up first.");
+                    showCard("SIGNUP");
+                } else if (resp.contains("BAD_CREDENTIALS")) {
+                    JOptionPane.showMessageDialog(this, "Incorrect password.");
+                } else {
+                    JOptionPane.showMessageDialog(this, resp);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            }
         });
 
         back.addActionListener(e -> showCard("HOME"));
@@ -179,22 +193,23 @@ public class newReservationGUI extends JFrame {
 
         JButton btnMake = new JButton("Make a reservation");
         JButton btnMy = new JButton("My bookings");
-        JButton btnExit = new JButton("Exit");
         JButton back = new JButton("Back");
 
         c.gridx=0; c.gridy=0; c.gridwidth=2; c.anchor=GridBagConstraints.CENTER; p.add(title, c);
         c.gridwidth=1;
         c.gridy=1; p.add(btnMake, c);
         c.gridy=2; p.add(btnMy, c);
-        c.gridy=3; p.add(btnExit, c);
         c.gridy=4; p.add(back, c);
 
-        btnMake.addActionListener(e -> showCard("TYPE"));
+        btnMake.addActionListener(e -> {
+            if (!ensureConnected()) return;
+            showCard("TYPE");
+        });
         btnMy.addActionListener(e -> {
+            if (!ensureConnected()) return;
             refreshMyBookingsView();
             showCard("MY_BOOKINGS");
         });
-        btnExit.addActionListener(e -> System.exit(0));
         back.addActionListener(e -> showCard("HOME"));
 
         root.add(p, "MENU");
@@ -221,6 +236,7 @@ public class newReservationGUI extends JFrame {
         c.gridy=3; p.add(back, c);
 
         next.addActionListener(e -> {
+            if (!ensureConnected()) return;
             selectedType = cbType.getSelectedItem().toString();
             showCard("DURATION");
         });
@@ -256,6 +272,7 @@ public class newReservationGUI extends JFrame {
         c.gridy=4; p.add(back, c);
 
         next.addActionListener(e -> {
+            if (!ensureConnected()) return;
             selectedStartDay = (Integer) cbStartDay.getSelectedItem();
             selectedNights = (Integer) cbNights.getSelectedItem();
             int endDay = selectedStartDay + selectedNights - 1;
@@ -298,20 +315,30 @@ public class newReservationGUI extends JFrame {
         c.gridwidth=1; c.gridy=2; c.gridx=0; p.add(reserve, c);
         c.gridx=1; p.add(back, c);
 
-        
-
         reserve.addActionListener(e -> {
+            if (!ensureConnected()) return;
             String sel = listRooms.getSelectedValue();
             if (sel == null) {
                 JOptionPane.showMessageDialog(this, "Select a room.");
                 return;
             }
             selectedRoomId = sel;
-            doBook(currentUser, selectedType, selectedRoomId, selectedStartDay, selectedNights);
-            userBookings.computeIfAbsent(currentUser, k -> new ArrayList<>())
-                        .add(selectedRoomId + " - Day " + selectedStartDay + " x " + selectedNights);
-            JOptionPane.showMessageDialog(this, "Booking confirmed for " + selectedRoomId);
-            showCard("MENU");
+            try {
+                String resp = client.bookRoom(
+                        currentUser, selectedType, selectedRoomId, selectedStartDay, selectedNights);
+                if (resp.startsWith("OK CONFIRMED")) {
+                    JOptionPane.showMessageDialog(this, "Booking confirmed for " + selectedRoomId);
+                    showCard("MENU");
+                } else {
+                    JOptionPane.showMessageDialog(this, resp);
+                    // refresh availability after failure (room may have been taken)
+                    lastAvailableRooms = findAvailableRooms(selectedType, selectedStartDay, selectedNights);
+                    if (lastAvailableRooms.isEmpty()) showCard("NO_AVAIL");
+                    else refreshResultsList();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Connection error: " + ex.getMessage());
+            }
         });
 
         back.addActionListener(e -> showCard("DURATION"));
@@ -347,18 +374,15 @@ public class newReservationGUI extends JFrame {
         myBookingsArea.setEditable(false);
 
         JButton btnCancelDemo = new JButton("Cancel reservation");
-        btnCancelDemo.setEnabled(false);
+        btnCancelDemo.setEnabled(false); // demo only
 
         JButton back = new JButton("Back");
-        JButton exit = new JButton("Exit");
 
         JPanel south = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 8));
         south.add(btnCancelDemo);
         south.add(back);
-        south.add(exit);
 
         back.addActionListener(e -> showCard("MENU"));
-        exit.addActionListener(e -> System.exit(0));
 
         p.add(title, BorderLayout.NORTH);
         p.add(new JScrollPane(myBookingsArea), BorderLayout.CENTER);
@@ -367,12 +391,27 @@ public class newReservationGUI extends JFrame {
     }
 
     private void refreshMyBookingsView() {
-        List<String> list = userBookings.getOrDefault(currentUser, Collections.emptyList());
-        if (list.isEmpty()) myBookingsArea.setText("No bookings yet.");
-        else {
-            StringBuilder sb = new StringBuilder();
-            for (String s : list) sb.append("• ").append(s).append('\n');
-            myBookingsArea.setText(sb.toString());
+        if (currentUser == null || currentUser.isEmpty()) {
+            myBookingsArea.setText("Please log in first.");
+            return;
+        }
+        if (!ensureConnected()) return;
+        try {
+            String resp = client.myReservations(currentUser);     // "OK RES S1@3x2,P2@1x1" or "OK RES"
+            if (resp.startsWith("OK RES")) {
+                String csv = resp.substring("OK RES".length()).trim();
+                if (csv.isEmpty()) { myBookingsArea.setText("No bookings yet."); return; }
+                StringBuilder sb = new StringBuilder();
+                for (String item : csv.split(",")) {
+                    item = item.trim();
+                    if (!item.isEmpty()) sb.append("• ").append(item).append('\n');
+                }
+                myBookingsArea.setText(sb.toString());
+            } else {
+                myBookingsArea.setText(resp);
+            }
+        } catch (Exception ex) {
+            myBookingsArea.setText("Connection error: " + ex.getMessage());
         }
     }
 
@@ -390,51 +429,35 @@ public class newReservationGUI extends JFrame {
         for (String r : lastAvailableRooms) roomsModel.addElement(r);
     }
 
-    private int catIndexOf(String type) {
-        switch (type.toUpperCase()) {
-            case "STANDARD": return 0;
-            case "PREMIUM":  return 1;
-            case "SUITE":    return 2;
-            default:         return 0;
+    private boolean ensureConnected() {
+        if (!serverConnected) {
+            JOptionPane.showMessageDialog(this, "Server is disconnected. Please start the server.");
+            showCard("HOME");
+            return false;
         }
-    }
-
-    private String[] roomsOf(String type) {
-        switch (type.toUpperCase()) {
-            case "STANDARD": return STD_ROOMS;
-            case "PREMIUM":  return PRM_ROOMS;
-            case "SUITE":    return STE_ROOMS;
-            default:         return STD_ROOMS;
-        }
+        return true;
     }
 
     private List<String> findAvailableRooms(String type, int startDay, int nights) {
         List<String> out = new ArrayList<>();
-        int cat = catIndexOf(type);
-        String[] ids = roomsOf(type);
-        int end = startDay + nights - 1;
-        for (int r = 0; r < 5; r++) {
-            boolean ok = true;
-            for (int d = startDay; d <= end; d++) {
-                if (!availability[cat][r][d-1]) { ok = false; break; }
+        if (!ensureConnected()) return out;
+        try {
+            String resp = client.listAvail(type, startDay, nights); // "OK ROOMS S1,S3" or "OK ROOMS"
+            if (resp.startsWith("OK ROOMS")) {
+                String csv = resp.substring("OK ROOMS".length()).trim();
+                if (!csv.isEmpty()) {
+                    for (String s : csv.split(",")) {
+                        String id = s.trim();
+                        if (!id.isEmpty()) out.add(id);
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, resp);
             }
-            if (ok) out.add(ids[r]);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Connection error: " + ex.getMessage());
         }
         return out;
-    }
-
-    private void doBook(String user, String type, String roomId, int startDay, int nights) {
-        int cat = catIndexOf(type);
-        int roomIdx = roomIndexOf(type, roomId);
-        for (int d = startDay; d <= startDay + nights - 1; d++) {
-            availability[cat][roomIdx][d-1] = false;
-        }
-    }
-
-    private int roomIndexOf(String type, String roomId) {
-        String[] ids = roomsOf(type);
-        for (int i = 0; i < ids.length; i++) if (ids[i].equalsIgnoreCase(roomId)) return i;
-        return -1;
     }
 
     public static void main(String[] args) {
