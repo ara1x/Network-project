@@ -42,7 +42,7 @@ public class newReservationGUI extends JFrame {
 
         // connect (hard fail if server not running)
         try {
-            client.connect("localhost", 9090);  
+            client.connect("10.6.203.10", 9090);  
             client.ping();
             serverConnected = true;
         } catch (IOException e) {
@@ -276,10 +276,10 @@ public class newReservationGUI extends JFrame {
             selectedStartDay = (Integer) cbStartDay.getSelectedItem();
             selectedNights = (Integer) cbNights.getSelectedItem();
             int endDay = selectedStartDay + selectedNights - 1;
-            if (endDay > 7) {
+            /*if (endDay > 7) {
                 JOptionPane.showMessageDialog(this, "End day exceeds 7.");
                 return;
-            }
+            }*/
             lastAvailableRooms = findAvailableRooms(selectedType, selectedStartDay, selectedNights);
             if (lastAvailableRooms.isEmpty()) showCard("NO_AVAIL");
             else {
