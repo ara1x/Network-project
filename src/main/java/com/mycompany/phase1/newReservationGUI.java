@@ -461,6 +461,6 @@ public class newReservationGUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ReservationGUI().setVisible(true));
+        SwingUtilities.invokeLater(() -> new newReservationGUI().setVisible(true));
     }
 }
