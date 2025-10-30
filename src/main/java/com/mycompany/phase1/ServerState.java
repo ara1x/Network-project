@@ -82,47 +82,56 @@ public class ServerState {
         return -1;
     }
 
-    public synchronized String listAvailableRoomsCsv(String category, int startDay, int nights) {
-        int cat = catIndex(category);
-        int end = startDay + nights - 1;
-        if (startDay < 1 || nights < 1 || end > 7) return "";
+public synchronized String listAvailableRoomsCsv(String category, int startDay, int nights) {
+    int cat = catIndex(category);
+    if (startDay < 1 || nights < 1) return "";
 
-        StringBuilder sb = new StringBuilder();
-        for (int r = 0; r < 5; r++) {
-            boolean ok = true;
-            for (int d = startDay; d <= end; d++) {
-                if (!availability[cat][r][d-1]) { ok = false; break; }
-            }
-            if (ok) {
-                if (sb.length() > 0) sb.append(",");
-                sb.append(ROOM_IDS[cat][r]);
+    StringBuilder sb = new StringBuilder();
+    for (int r = 0; r < 5; r++) {
+        boolean ok = true;
+        // check nights with wrapping (mod 7)
+        for (int i = 0; i < nights; i++) {
+            int dIdx = ((startDay - 1 + i) % 7); // 0..6
+            if (!availability[cat][r][dIdx]) {
+                ok = false;
+                break;
             }
         }
-        return sb.toString();
+        if (ok) {
+            if (sb.length() > 0) sb.append(",");
+            sb.append(ROOM_IDS[cat][r]);
+        }
+    }
+    return sb.toString();
+}
+
+public synchronized String reserve(String username, String category, String roomId, int startDay, int nights) {
+    int cat = catIndex(category);
+    int roomIdx = roomIndexFromId(cat, roomId);
+    if (roomIdx < 0) return null;
+    if (startDay < 1 || nights < 1) return null;
+
+    // check window availability (with wrap)
+    for (int i = 0; i < nights; i++) {
+        int dIdx = ((startDay - 1 + i) % 7);
+        if (!availability[cat][roomIdx][dIdx]) return null;
     }
 
-    public synchronized String reserve(String username, String category, String roomId, int startDay, int nights) {
-        int cat = catIndex(category);
-        int roomIdx = roomIndexFromId(cat, roomId);
-        if (roomIdx < 0) return null;
-        int end = startDay + nights - 1;
-        if (startDay < 1 || nights < 1 || end > 7) return null;
-
-        // check window
-        for (int d = startDay; d <= end; d++) {
-            if (!availability[cat][roomIdx][d-1]) return null;
-        }
-        // mark reserved
-        for (int d = startDay; d <= end; d++) {
-            availability[cat][roomIdx][d-1] = false;
-        }
-        String resId = "R" + System.nanoTime();
-        Reservation res = new Reservation(resId, username, new Room(roomId, category, roomIdx+1), startDay, nights);
-        byUser.computeIfAbsent(username.toLowerCase(), k -> new ArrayList<>()).add(res);
-        saveReservation(res);
-        return resId;
+    // mark as reserved
+    for (int i = 0; i < nights; i++) {
+        int dIdx = ((startDay - 1 + i) % 7);
+        availability[cat][roomIdx][dIdx] = false;
     }
 
+    String resId = "R" + System.nanoTime();
+    Reservation res = new Reservation(resId, username, new Room(roomId, category, roomIdx + 1), startDay, nights);
+    byUser.computeIfAbsent(username.toLowerCase(), k -> new ArrayList<>()).add(res);
+    saveReservation(res);
+    return resId;
+}
+
+
+  
     public synchronized String reservationsCsvFor(String username) {
         List<Reservation> rs = byUser.getOrDefault(username.toLowerCase(), Collections.emptyList());
         if (rs.isEmpty()) return "";
