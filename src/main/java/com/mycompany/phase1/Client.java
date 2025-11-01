@@ -31,12 +31,12 @@ public class Client {
         return resp.trim();
     }
 
-    // ---- existing (kept for compatibility) ----
+    
     public String register(String u, String p) throws IOException {
         return rpc("REGISTER " + u + " " + p);
     }
 
-    // ---- new RPCs ----
+   
     public String login(String u, String p) throws IOException {
         return rpc("LOGIN " + u + " " + p);
     }

@@ -3,20 +3,15 @@ package com.mycompany.phase1;
 import java.io.*;
 import java.util.*;
 
-/**
- * Server-side truth:
- * - 3 categories × 5 rooms × 7 days availability grid
- * - users (username/password)
- * - reservations per user
- */
+
 public class ServerState {
 
     private final List<User> users = new ArrayList<>();
-    private final Map<String, String> creds = new HashMap<>(); // username -> password
+    private final Map<String, String> creds = new HashMap<>(); 
     private final Map<String, List<Reservation>> byUser = new HashMap<>();
 
-    // category order: 0=STANDARD, 1=PREMIUM, 2=SUITE
-    private final boolean[][][] availability = new boolean[3][5][7]; // [cat][roomIdx][dayIdx]
+   
+    private final boolean[][][] availability = new boolean[3][5][7]; 
 
     private static final String[] CATS = {"STANDARD","PREMIUM","SUITE"};
     private static final String[][] ROOM_IDS = {
@@ -26,13 +21,13 @@ public class ServerState {
     };
 
     public ServerState() {
-        // all true initially
+        
         for (int c = 0; c < 3; c++) for (int r = 0; r < 5; r++) Arrays.fill(availability[c][r], true);
         loadUsersFromFile();
-        loadReservationsFromFile(); // optional; safe if file absent
+        loadReservationsFromFile(); 
     }
 
-    // ---------- users ----------
+    
     private void loadUsersFromFile() {
         File f = new File("users.txt");
         if (!f.exists()) return;
@@ -68,7 +63,7 @@ public class ServerState {
         return creds.containsKey(key) && Objects.equals(creds.get(key), password);
     }
 
-    // ---------- availability & reservations ----------
+   
     private int catIndex(String cat) {
         String x = cat.toUpperCase();
         if (x.equals("STANDARD")) return 0;
@@ -89,9 +84,9 @@ public synchronized String listAvailableRoomsCsv(String category, int startDay, 
     StringBuilder sb = new StringBuilder();
     for (int r = 0; r < 5; r++) {
         boolean ok = true;
-        // check nights with wrapping (mod 7)
+      
         for (int i = 0; i < nights; i++) {
-            int dIdx = ((startDay - 1 + i) % 7); // 0..6
+            int dIdx = ((startDay - 1 + i) % 7); 
             if (!availability[cat][r][dIdx]) {
                 ok = false;
                 break;
@@ -111,13 +106,13 @@ public synchronized String reserve(String username, String category, String room
     if (roomIdx < 0) return null;
     if (startDay < 1 || nights < 1) return null;
 
-    // check window availability (with wrap)
+    
     for (int i = 0; i < nights; i++) {
         int dIdx = ((startDay - 1 + i) % 7);
         if (!availability[cat][roomIdx][dIdx]) return null;
     }
 
-    // mark as reserved
+   
     for (int i = 0; i < nights; i++) {
         int dIdx = ((startDay - 1 + i) % 7);
         availability[cat][roomIdx][dIdx] = false;
