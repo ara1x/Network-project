@@ -83,7 +83,7 @@ public class ReservationGUI extends JFrame {
 
         // connect (kept exactly as your logic)
         try {
-            client.connect("localhost", 9090);
+            client.connect("192.168.8.126", 9090);
             client.ping();
             serverConnected = true;
         } catch (IOException e) {
