@@ -3,7 +3,7 @@ package com.mycompany.phase1;
 
 public class Room {
     private String id;
-    private String type;   // STANDARD, PREMIUM, SUITE
+    private String type;  
     private int number;
 
     public Room(String id, String type, int number) {

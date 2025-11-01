@@ -153,7 +153,7 @@ public synchronized String reserve(String username, String category, String room
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // id,username,type,number,day,nights
+               
                 String[] p = line.split(",", 6);
                 if (p.length == 6) {
                     String id = p[0], user = p[1], type = p[2];
@@ -162,9 +162,9 @@ public synchronized String reserve(String username, String category, String room
                     int nights = Integer.parseInt(p[5]);
                     int cat = catIndex(type);
                     String roomId = ROOM_IDS[cat][number-1];
-                    // mark as taken in grid
+                 
                     for (int d = day; d <= day + nights - 1; d++) availability[cat][number-1][d-1] = false;
-                    // track per user
+
                     Reservation r = new Reservation(id, user, new Room(roomId, type, number), day, nights);
                     byUser.computeIfAbsent(user.toLowerCase(), k -> new ArrayList<>()).add(r);
                 }

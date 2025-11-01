@@ -34,29 +34,29 @@ public class NewClient implements Runnable {
                         out.println("OK PONG");
                         break;
 
-                    case "REGISTER": // REGISTER username password
+                    case "REGISTER": 
                         if (t.length < 3) { out.println("ERR usage: REGISTER username password"); break; }
                         out.println(state.register(t[1], t[2]) ? "OK REGISTERED" : "ERR USER_EXISTS");
                         break;
 
-                    case "LOGIN": // LOGIN username password
+                    case "LOGIN": 
                         if (t.length < 3) { out.println("ERR usage: LOGIN username password"); break; }
                         if (state.login(t[1], t[2])) out.println("OK LOGIN");
                         else if (state.userExists(t[1])) out.println("ERR BAD_CREDENTIALS");
                         else out.println("ERR NO_SUCH_USER");
                         break;
 
-                    // LIST_AVAIL <CATEGORY> <STARTDAY 1..7> <NIGHTS 1..7>
+                
                     case "LIST_AVAIL":
                         if (t.length < 4) { out.println("ERR usage: LIST_AVAIL CAT START NIGHTS"); break; }
                         String cat = t[1];
                         int start = Integer.parseInt(t[2]);
                         int nights = Integer.parseInt(t[3]);
-                        String csv = state.listAvailableRoomsCsv(cat, start, nights); // e.g., "S1,S3,S5"
+                        String csv = state.listAvailableRoomsCsv(cat, start, nights); 
                         out.println("OK ROOMS " + csv);
                         break;
 
-                    // BOOK2 username category roomId start nights
+
                     case "BOOK2":
                         if (t.length < 6) { out.println("ERR usage: BOOK2 user cat room start nights"); break; }
                         String user = t[1], category = t[2], roomId = t[3];
@@ -65,19 +65,19 @@ public class NewClient implements Runnable {
                         out.println(resId != null ? ("OK CONFIRMED " + resId) : "ERR NO_AVAIL");
                         break;
 
-                    // MY_RES username
+                        
                     case "MY_RES":
                         if (t.length < 2) { out.println("ERR usage: MY_RES username"); break; }
-                        out.println("OK RES " + state.reservationsCsvFor(t[1])); // "S1@3x2,P2@1x1"
+                        out.println("OK RES " + state.reservationsCsvFor(t[1])); 
                         break;
 
-                    // kept old SHOW/BOOK for compatibility (optional)
+                   
                     case "SHOW":
                         if (t.length < 2) { out.println("ERR usage: SHOW type"); break; }
                         out.println("OK ROOMS " + state.listAvailableRoomsCsv(t[1], 1, 1));
                         break;
 
-                    case "BOOK": // old style (not used by GUI now)
+                    case "BOOK":
                         out.println("ERR USE_BOOK2");
                         break;
 
