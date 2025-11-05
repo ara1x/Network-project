@@ -211,7 +211,7 @@ public class ReservationGUI extends JFrame {
 
     // ----------------- cards (visuals only) -----------------
 
-    // HOME
+    // HOME //first frame
     private void buildHome() {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBackground(BEIGE_BG);
@@ -273,10 +273,10 @@ public class ReservationGUI extends JFrame {
                 return;
             }
             try {
-                String resp = client.register(u, pw);          // "OK REGISTERED" | "ERR USER_EXISTS"
+                String resp = client.register(u, pw);  //call reg from client  // "OK REGISTERED" | "ERR USER_EXISTS"
                 if (resp != null && resp.startsWith("OK")) {
                     currentUser = u;
-                    JOptionPane.showMessageDialog(this, "Registered successfully.");
+                    JOptionPane.showMessageDialog(this, "Registered successfully."); //feedback
                     enableDashboardUI();
                     showCard("MENU");
                 } else {
@@ -317,7 +317,7 @@ public class ReservationGUI extends JFrame {
         c.gridy=3; p.add(btnBack, c);
 
         btnLogin.addActionListener(e -> {
-            if (!ensureConnected()) return;
+            if (!ensureConnected()) return; 
             String u = tfUser.getText().trim();
             String pw = new String(tfPass.getPassword());
             if (u.isEmpty()) {
@@ -325,7 +325,7 @@ public class ReservationGUI extends JFrame {
                 return;
             }
             try {
-                String resp = client.login(u, pw);             // "OK LOGIN" | "ERR NO_SUCH_USER" 
+                String resp = client.login(u, pw);//call login from client  // "OK LOGIN" | "ERR NO_SUCH_USER" 
                 if (resp.startsWith("OK")) {
                     currentUser = u;
                     JOptionPane.showMessageDialog(this, "Logged in successfully.");
@@ -472,7 +472,7 @@ public class ReservationGUI extends JFrame {
             "Booking from " + startName + " to " + endName + " (" + selectedNights + " nights)"
         );
 
-            lastAvailableRooms = findAvailableRooms(selectedType, selectedStartDay, selectedNights);
+            lastAvailableRooms = findAvailableRooms(selectedType, selectedStartDay, selectedNights); //look for available rooms//call client
             if (lastAvailableRooms.isEmpty()) showCard("NO_AVAIL");
             else {
                 refreshResultsList();
@@ -484,7 +484,7 @@ public class ReservationGUI extends JFrame {
         root.add(wrapCard(p), "DURATION");
     }
 
-    // RESULTS
+    // RESULTS // ---------------reserve button---------------
     private void buildResults() {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBackground(WHITE);
@@ -545,7 +545,7 @@ public class ReservationGUI extends JFrame {
             }
             selectedRoomId = sel;
             try {
-                String resp = client.bookRoom(
+                String resp = client.bookRoom( //----------call bookroom from Client------------
                         currentUser, selectedType, selectedRoomId, selectedStartDay, selectedNights);
                 if (resp.startsWith("OK CONFIRMED")) {
                     JOptionPane.showMessageDialog(this, "Booking confirmed for " + selectedRoomId);
@@ -587,7 +587,7 @@ public class ReservationGUI extends JFrame {
         root.add(wrapCard(p), "NO_AVAIL");
     }
 
-    // MY_BOOKINGS
+    // -------------MY_BOOKINGS---------------- 
     private void buildMyBookings() {
         JPanel p = new JPanel(new BorderLayout(12,12));
         p.setBackground(WHITE);
@@ -721,7 +721,7 @@ public class ReservationGUI extends JFrame {
         List<String> out = new ArrayList<>();
         if (!ensureConnected()) return out;
         try {
-            String resp = client.listAvail(type, startDay, nights); 
+            String resp = client.listAvail(type, startDay, nights); //call client 
             if (resp.startsWith("OK ROOMS")) {
                 String csv = resp.substring("OK ROOMS".length()).trim();
                 if (!csv.isEmpty()) {
@@ -843,4 +843,3 @@ public class ReservationGUI extends JFrame {
 
     
 }
-
