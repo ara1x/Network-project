@@ -1,4 +1,4 @@
-
+/*
 package com.mycompany.phase1;
 
 import javax.swing.*;
@@ -75,7 +75,7 @@ public class ReservationGUI extends JFrame {
 
         // connect
         try {
-            client.connect("localhost", 9090);
+            client.connect("10.6.198.40", 9090);
             client.ping();
             serverConnected = true;
         } catch (IOException e) {
@@ -842,4 +842,4 @@ public class ReservationGUI extends JFrame {
     }
 
     
-}
+}*/

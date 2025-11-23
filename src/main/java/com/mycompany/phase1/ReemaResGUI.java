@@ -13,7 +13,7 @@ import java.util.Base64;
 import java.util.List;
 import javax.imageio.ImageIO;
 
-public class ReservationGUI extends JFrame {
+public class ReemaResGUI extends JFrame {
 
     // ---- networking ----
     private final Client client = new Client();
@@ -72,7 +72,7 @@ public class ReservationGUI extends JFrame {
     private BufferedImage bgImage, poolImage1, poolImage2, roomImage;
     private BufferedImage logoImage;
 
-    public ReservationGUI() {
+    public ReemaResGUI() {
         setTitle("Sahara Resort - AlUla");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1200, 750);
@@ -91,7 +91,7 @@ public class ReservationGUI extends JFrame {
 
         // Connect
         try {
-            client.connect("localhost", 9090);
+            client.connect("192.168.8.175", 9090);
             client.ping();
             serverConnected = true;
         } catch (IOException e) {
@@ -124,7 +124,7 @@ public class ReservationGUI extends JFrame {
     private void loadImages() {
         try {
             ClassLoader classLoader = getClass().getClassLoader();
-            bgImage = ImageIO.read(classLoader.getResourceAsStream("images/bg-homepage.jpg"));
+            bgImage = ImageIO.read(classLoader.getResourceAsStream("images/Alula.jpeg"));
             poolImage1 = ImageIO.read(classLoader.getResourceAsStream("images/pool1.jpg"));
             poolImage2 = ImageIO.read(classLoader.getResourceAsStream("images/pool2.jpg"));
             roomImage = ImageIO.read(classLoader.getResourceAsStream("images/room-suite.jpg"));
@@ -340,6 +340,8 @@ public class ReservationGUI extends JFrame {
                 new LineBorder(GOLD_ACCENT, 3, true),
                 new EmptyBorder(40, 50, 40, 50)));
 
+        
+         overlay.setPreferredSize(new Dimension(520, 360));//card size
         GridBagConstraints oc = gbc();
 
         JLabel logo = new JLabel(new ImageIcon(logoImage));
@@ -539,7 +541,9 @@ public class ReservationGUI extends JFrame {
 
         c.gridx = 0;
         c.gridy = 0;
-        c.gridwidth = 2;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         p.add(title, c);
         c.gridwidth = 1;
         c.gridy = 1;
@@ -930,7 +934,15 @@ public class ReservationGUI extends JFrame {
                 new EmptyBorder(10, 20, 10, 20)));
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setOpaque(true);
-        b.setPreferredSize(new Dimension(180, 44));
+        
+   /* FontMetrics fm = b.getFontMetrics(b.getFont());
+    int textWidth = fm.stringWidth(text);
+    int buttonWidth = textWidth + 50; // padding  
+    int buttonHeight = fm.getHeight() + 20; 
+
+    b.setPreferredSize(new Dimension(buttonWidth, buttonHeight));*/
+        
+       // b.setPreferredSize(new Dimension(180, 44));//
 
         b.addMouseListener(new MouseAdapter() {
             Color base = DARK_SAND;
@@ -1090,7 +1102,9 @@ public class ReservationGUI extends JFrame {
                             try {
                                 day = Integer.parseInt(rest.substring(0, xPos));
                                 nights = Integer.parseInt(rest.substring(xPos + 1));
-                                display = roomId + " (Day " + day + ", " + nights + " nights)";
+                                String dayName = WEEK_DAYS[day - 1];
+                                display = roomId + " (" + dayName + ", " + nights + " nights)";
+
                             } catch (NumberFormatException ignored) {
                                 display = info;
                             }
@@ -1224,6 +1238,6 @@ public class ReservationGUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ReservationGUI().setVisible(true));
+        SwingUtilities.invokeLater(() -> new ReemaResGUI().setVisible(true));
     }
 }
