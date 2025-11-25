@@ -14,9 +14,9 @@ public class ServerState {
 
     private static final String[] CATS = {"STANDARD","PREMIUM","SUITE"};
     private static final String[][] ROOM_IDS = {
-            {"S1","S2","S3","S4","S5"},
-            {"P1","P2","P3","P4","P5"},
-            {"U1","U2","U3","U4","U5"}
+            {"Wadi Room 1","Wadi Room 2","Wadi Room 3","Wadi Room 4","Wadi Room 5"},
+            {"Oasis Room 1","Oasis Room 2","Oasis Room 3","Oasis Room 4","Oasis Room 5"},
+            {"Mountain Suite 1","Mountain Suite 2","Mountain Suite 3","Mountain Suite 4","Mountain Suite 5"}
     };
 
     public ServerState() {
