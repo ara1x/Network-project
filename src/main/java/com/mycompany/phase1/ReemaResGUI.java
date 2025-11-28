@@ -216,8 +216,12 @@ private void buildFrameShell() {
     profile.add(new JLabel(new SimpleIcon(22, 22, SimpleIcon.Type.ROOF)));
     profile.add(lblUser);
 
-    headerPanel.add(logoLabel, BorderLayout.WEST);
-    headerPanel.add(profile, BorderLayout.EAST);
+   // Put logo fully at the far left corner
+   JPanel leftWrapper = new JPanel(new BorderLayout());
+   leftWrapper.setOpaque(false);
+   leftWrapper.add(logoLabel, BorderLayout.WEST);
+
+headerPanel.add(leftWrapper, BorderLayout.WEST);    headerPanel.add(profile, BorderLayout.EAST);
 
     // Sidebar
     sidebarPanel = new JPanel(new GridBagLayout());
@@ -356,9 +360,11 @@ private void buildHome() {
     JLabel logo = new JLabel(new ImageIcon(logoImage));
     logo.setBorder(new EmptyBorder(0, 0, 20, 0));
 
-    JLabel subtitle = new JLabel("Experience luxury in the heart of AlUla");
+    JLabel subtitle = new JLabel("Experience luxury in the heart of AlUla", SwingConstants.CENTER);
     subtitle.setFont(SUBTITLE_FONT);
     subtitle.setForeground(DARK_SAND);
+    oc.anchor = GridBagConstraints.CENTER;
+
 
     JButton btnLogin = styledDesertButton("Log In");
     JButton btnSignUp = styledDesertButton("Sign Up");
