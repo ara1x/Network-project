@@ -80,7 +80,9 @@ public class NewClient implements Runnable {
                             out.println("ERR usage: BOOK2 user cat room start nights");
                             break;
                         }
-                        String user = t[1], category = t[2], roomId = t[3];
+                        String user = t[1];
+                        String category = t[2];
+                        String roomId = t[3].replace("_", " ");  // restore original room name
                         int s = Integer.parseInt(t[4]), n = Integer.parseInt(t[5]);
                         String resId = state.reserve(user, category, roomId, s, n);
                         out.println(resId != null
