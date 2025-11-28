@@ -124,12 +124,12 @@ public ReservationGUI() {
 
 private void loadImages() {
     try {
-        ClassLoader classLoader = getClass().getClassLoader();
-        homepage = ImageIO.read(classLoader.getResourceAsStream("images/homepage.jpg"));
+       ClassLoader classLoader = getClass().getClassLoader();
+       homepage = ImageIO.read(classLoader.getResourceAsStream("images/homepage.jpg"));
         
         // Load logo and resize it to fit properly - LARGER SIZE for better visibility
-        BufferedImage originalLogo = ImageIO.read(classLoader.getResourceAsStream("images/Logo.png"));
-        logoImage = resizeImage(originalLogo, 450, 150); // Increased from 300x100
+       BufferedImage originalLogo = ImageIO.read(classLoader.getResourceAsStream("images/Logo.png"));
+      logoImage = resizeImage(originalLogo, 450, 150); // Increased from 300x100
         
     } catch (Exception e) {
         e.printStackTrace();
@@ -720,6 +720,8 @@ private void buildDuration() {
     root.add(wrapCard(p), "DURATION");
 }
 
+
+
 // RESULTS
 private void buildResults() {
     JPanel p = new JPanel(new BorderLayout(15, 15));
@@ -735,6 +737,8 @@ private void buildResults() {
     listRooms.setVisibleRowCount(6);
     listRooms.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     listRooms.setFixedCellHeight(60);
+   
+
     listRooms.setSelectionBackground(DARK_BROWN);
     listRooms.setSelectionForeground(WARM_WHITE);
     listRooms.setBackground(new Color(250, 250, 250));
@@ -779,32 +783,38 @@ private void buildResults() {
     p.add(btnPanel, BorderLayout.SOUTH);
 
     reserve.addActionListener(e -> {
-        if (!ensureConnected()) return;
-        String sel = listRooms.getSelectedValue();
-        if (sel == null) {
-            JOptionPane.showMessageDialog(this, "Please select a room.");
-            return;
+    if (!ensureConnected()) return;
+    String sel = listRooms.getSelectedValue();
+    if (sel == null) {
+        JOptionPane.showMessageDialog(this, "Please select a room.");
+        return;
+    }
+
+    // Room name may contain spaces → convert to safe id
+    selectedRoomId = sel;
+    String safeRoomId = selectedRoomId.replace(" ", "_");
+
+    try {
+        String resp = client.bookRoom(
+                currentUser, selectedType, safeRoomId,
+                selectedStartDay, selectedNights);
+
+        if (resp.startsWith("OK CONFIRMED")) {
+            JOptionPane.showMessageDialog(this,
+                    "Reservation confirmed for " + selectedRoomId + "!");
+            showCard("MENU");
+        } else {
+            JOptionPane.showMessageDialog(this, resp);
+            lastAvailableRooms = findAvailableRooms(
+                    selectedType, selectedStartDay, selectedNights);
+            if (lastAvailableRooms.isEmpty()) showCard("NO_AVAIL");
+            else refreshResultsList();
         }
-        selectedRoomId = sel;
-        try {
-            String resp = client.bookRoom(
-                    currentUser, selectedType, selectedRoomId,
-                    selectedStartDay, selectedNights);
-            if (resp.startsWith("OK CONFIRMED")) {
-                JOptionPane.showMessageDialog(this,
-                        "Reservation confirmed for " + selectedRoomId + "!");
-                showCard("MENU");
-            } else {
-                JOptionPane.showMessageDialog(this, resp);
-                lastAvailableRooms = findAvailableRooms(
-                        selectedType, selectedStartDay, selectedNights);
-                if (lastAvailableRooms.isEmpty()) showCard("NO_AVAIL");
-                else refreshResultsList();
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Connection error: " + ex.getMessage());
-        }
-    });
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Connection error: " + ex.getMessage());
+    }
+});
+
 
     back.addActionListener(e -> showCard("DURATION"));
     root.add(wrapCard(p), "RESULTS");
