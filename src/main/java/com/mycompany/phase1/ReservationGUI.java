@@ -129,8 +129,7 @@ private void loadImages() {
     try {
        ClassLoader classLoader = getClass().getClassLoader();
        homepage = ImageIO.read(classLoader.getResourceAsStream("images/homepage.jpg"));
-        
-        // Load logo and resize it to fit properly - LARGER SIZE for better visibility
+        //logo
        BufferedImage originalLogo = ImageIO.read(classLoader.getResourceAsStream("images/Logo.png"));
       logoImage = resizeImage(originalLogo, 450, 150); // Increased from 300x100
         
@@ -151,11 +150,9 @@ private BufferedImage resizeImage(BufferedImage original, int targetWidth, int t
     int newWidth = (int) (original.getWidth() * ratio);
     int newHeight = (int) (original.getHeight() * ratio);
     
-    // Create high-quality scaled image
     BufferedImage resized = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g = resized.createGraphics();
     
-    // High-quality rendering settings
     g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -350,7 +347,6 @@ private void buildHome() {
     GridBagConstraints c = gbc();
     c.insets = new Insets(20, 20, 20, 20);
 
-    // Semi-transparent overlay panel
     JPanel overlay = new JPanel(new GridBagLayout());
     overlay.setBackground(new Color(250, 248, 243, 220));
     overlay.setBorder(new CompoundBorder(
@@ -799,7 +795,6 @@ private void buildResults() {
         return;
     }
 
-    // Room name may contain spaces → convert to safe id
     selectedRoomId = sel;
     String safeRoomId = selectedRoomId.replace(" ", "_");
 
